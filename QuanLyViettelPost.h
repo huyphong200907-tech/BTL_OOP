@@ -1,58 +1,104 @@
 #ifndef QUANLYVIETTELPOST_H
 #define QUANLYVIETTELPOST_H
 
-#include <vector>
+#include <iostream>
 #include <string>
-#include "KhachHang.h"
-#include "Shipper.h"
-#include "DonHang.h"
-#include "BuuCuc.h"
+#include <vector>
+#include <memory>
+#include <unordered_map>
+#include <stdexcept>
+#include <limits>
 
 using namespace std;
 
+// ============================================================
+// HỆ THỐNG ĐƠN HÀNG (Đã gộp kiến trúc OOP hiện đại)
+// ============================================================
+class DonHang {
+public:
+    using Tien = int64_t;
+
+    DonHang(string maDon, string tenKhach, Tien tienHang);
+    virtual ~DonHang() = default; // Cho phép unique_ptr hủy đúng class con
+
+    const string& getMaVanDon() const;
+    string getTrangThai() const;
+    void capNhatTrangThai(string tt);
+    
+    // Đa hình
+    virtual Tien tinhTongTien() const = 0;
+    virtual void xuatThongTin() const = 0;
+    
+    // Hỗ trợ hàm hệ thống cũ
+    virtual string getDiaChiNhan() const = 0; 
+    virtual Tien tinhPhiVanChuyen() const = 0;
+
+protected:
+    Tien getTienHang() const;
+    void xuatThongTinChung() const;
+
+private:
+    string maDon_;
+    string tenKhach_;
+    Tien tienHang_;
+    string trangThai_;
+};
+
+// Đơn giao tận nhà
+class DonGiaoNha final : public DonHang {
+public:
+    DonGiaoNha(string maDon, string tenKhach, Tien tienHang, string diaChi, Tien phiGiaoHang);
+    Tien tinhTongTien() const override;
+    void xuatThongTin() const override;
+    string getDiaChiNhan() const override;
+    Tien tinhPhiVanChuyen() const override;
+
+private:
+    string diaChi_;
+    Tien phiGiaoHang_;
+};
+
+// Đơn khách tự ra bưu cục nhận (Chuyển thể từ DonTaiCuaHang)
+class DonNhanTaiBuuCuc final : public DonHang {
+public:
+    using DonHang::DonHang;
+    Tien tinhTongTien() const override;
+    void xuatThongTin() const override;
+    string getDiaChiNhan() const override;
+    Tien tinhPhiVanChuyen() const override;
+};
+
+// ... (Khai báo các class BuuCuc, Nguoi, KhachHang, Shipper giữ nguyên như cũ) ...
+
+// ============================================================
+// HỆ THỐNG QUẢN LÝ CHÍNH
+// ============================================================
 class QuanLyViettelPost {
 private:
-    // Cấu trúc dữ liệu lưu trữ toàn cục (Central Data Storage)
     vector<KhachHang*> danhSachKhachHang;
     vector<Shipper*> danhSachShipper;
-    vector<DonHang*> tongDanhSachDonHang; // Lưu tất cả đơn hàng (Giao nhanh, Hỏa tốc...)
     vector<BuuCuc*> heThongBuuCuc;
-
-    // Singleton pattern (Tùy chọn nâng cao - Đảm bảo chỉ có 1 instance quản lý duy nhất)
-    // Nếu dùng Singleton, chuyển constructor vào private. Ở đây để public cho dễ hiểu với OOP cơ bản.
+    
+    // [UPDATE] Sử dụng unordered_map và unique_ptr để tối ưu O(1) tra cứu
+    unordered_map<string, unique_ptr<DonHang>> tongDanhSachDonHang;
 
 public:
     QuanLyViettelPost();
     ~QuanLyViettelPost();
 
-    // ---------------- MODULE QUẢN LÝ NHÂN SỰ & KHÁCH HÀNG (Người 2) ----------------
+    void themBuuCuc(BuuCuc* bc);
     void themKhachHang(KhachHang* kh);
     void themShipper(Shipper* sp);
-    KhachHang* timKhachHangTheoSDT(string sdt);
-    Shipper* timShipperTheoMa(string ma);
-    void hienThiDanhSachShipper() const;
 
-    // ---------------- MODULE QUẢN LÝ ĐƠN HÀNG (Người 1 & Người 3) ----------------
-    void taoDonHangMoi(DonHang* dh);
-    DonHang* traCuuDonHang(string maVanDon);
+    // [UPDATE] Cập nhật tham số nhận unique_ptr
+    bool taoDonHangMoi(unique_ptr<DonHang> dh);
+    DonHang* traCuuDonHang(const string& maVanDon) const;
+
+    void phanBoDonHangVeBuuCuc();
     void capNhatTrangThaiDon(string maVanDon, string trangThaiMoi);
-    void hienThiTatCaDonHang() const;
 
-    // ---------------- MODULE QUẢN LÝ BƯU CỤC (Người 3) ----------------
-    void themBuuCuc(BuuCuc* bc);
-    void hienThiHeThongBuuCuc() const;
-    // Hàm này sẽ lấy các đơn "Chờ xử lý" đẩy vào hàng đợi của Bưu cục gần nhất
-    void phanBoDonHangVeBuuCuc(); 
-
-    // ---------------- MODULE THỐNG KÊ (Người 5) ----------------
-    double tinhTongDoanhThu() const;
+    int64_t tinhTongDoanhThu() const;
     void thongKeDonHangTheoTrangThai(string trangThai) const;
-    void timShipperGiaoNhieuDonNhat() const;
-
-    // ---------------- MODULE LƯU TRỮ DỮ LIỆU (Người 4) ----------------
-    // Gọi các hàm này khi mở app (tải dữ liệu) và khi tắt app (lưu dữ liệu)
-    void docDuLieuTuFile(string tenFile);
-    void ghiDuLieuXuongFile(string tenFile) const;
 };
 
 #endif
