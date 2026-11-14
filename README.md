@@ -79,3 +79,60 @@ int main() {
 2. Trưởng nhóm gom tất cả các đoạn logic mọi người đã viết trong file `QuanLyViettelPost.cpp` (và các file Class con) ráp lại thành một bản duy nhất.
 3. Vì mọi người đều tuân thủ nguyên tắc "Gọi qua hàm đã khai báo trong file `.h`", khi biên dịch sẽ KHÔNG BÁO LỖI cú pháp.
 4. Cả nhóm cùng ngồi chạy kịch bản thật từ Console để bắt lỗi *logic* (nếu có).
+
+## 🔄 QUY TRÌNH DEMO
+Để chứng minh được toàn bộ sức mạnh của 5 Module (OOP, Queue, Map, File I/O, Thống kê), bạn hãy chạy chương trình và làm theo kịch bản nhập liệu từng bước dưới đây:
+Bước 1: Tạo đơn hàng Giao Tận Nhà (Test tính Đa hình)
+•	Tại Menu, nhập 1 (Tạo đơn hàng mới) -> Enter.
+•	Chon loai don: Nhập 1
+•	Nhap ma don: Nhập VD01
+•	Nhap ten khach: Nhập Nguyen Van A
+•	Nhap tien hang: Nhập 500000
+•	Nhap dia chi: Nhập Cau Giay, Ha Noi
+•	Nhap phi giao: Nhập 35000
+Kết quả: Hệ thống báo "Tao don thanh cong!".
+
+Bước 2: Tạo đơn Nhận Tại Bưu Cục (Test loại Class thứ 2)
+•	Tại Menu, nhập 1 -> Enter.
+•	Chon loai don: Nhập 2
+•	Nhap ma don: Nhập VD02
+•	Nhap ten khach: Nhập Tran Van B
+•	Nhap tien hang: Nhập 150000
+Kết quả: Đơn thứ 2 được tạo nhanh chóng, không bị hỏi địa chỉ và phí ship (do tính chất Kế thừa OOP).
+
+Bước 3: Cố tình tạo đơn trùng mã (Test bẫy lỗi của Unordered Map)
+•	Tại Menu, nhập 1 -> Enter.
+•	Chon loai don: Nhập 2
+•	Nhap ma don: Nhập VD01 (Cố tình nhập lại mã cũ)
+•	Nhap ten khach: Nhập Hacker
+•	Nhap tien hang: Nhập 999
+Kết quả: Hệ thống chặn lại và báo "-> Ma don da ton tai!", dữ liệu rác không bị ghi vào hệ thống.
+
+Bước 4: Tra cứu đơn hàng (Test cơ chế gọi hàm Ảo - Virtual)
+•	Tại Menu, nhập 2 -> Enter.
+•	Nhap ma don can tra cuu: Nhập VD01
+Kết quả: In ra đúng [Giao Tan Nha] kèm địa chỉ và phí giao. Tổng tiền tính = Tiền hàng + Phí ship.
+•	Tiếp tục nhập 2, tìm mã VD02.
+Kết quả: In ra đúng [Tai Buu Cuc] (miễn phí ship). Tổng tiền chỉ = Tiền hàng.
+
+Bước 5: Đưa đơn vào luồng xử lý (Test cấu trúc dữ liệu Queue)
+•	Tại Menu, nhập 3 (Phân bổ đơn) -> Enter.
+Kết quả: Hệ thống báo "Da day 2 don hang vao Hang Doi (Queue) cua cac Buu cuc."
+•	Bạn có thể bấm số 2 tra cứu lại đơn VD01, sẽ thấy trạng thái chuyển thành "Dang xu ly".
+Bước 6: Bưu cục giải phóng luồng (Test lấy ra khỏi Queue)
+•	Tại Menu, nhập 4 -> Enter.
+Kết quả: Bưu cục báo đã xử lý xong 2 đơn hàng. Trạng thái các đơn tự động thành "Da giao". (Nguyên lý Vào trước - Ra trước của Queue).
+
+Bước 7: Xem Báo cáo BTL (Test Thống kê)
+•	Tại Menu, nhập 5 -> Enter.
+Kết quả:
+•	Tổng số đơn đã giao: 2
+•	Doanh thu phí vận chuyển: 35000 VND (Vì đơn VD02 khách tự ra lấy nên phí ship = 0, hàm tự biết tính toán thông minh).
+•	In ra thông tin Shipper xuất sắc nhất.
+
+Bước 8: Thoát & Khôi phục dữ liệu (Test File I/O)
+•	Tại Menu, nhập 0 -> Enter.
+Kết quả: Màn hình báo "Luu du lieu thanh cong vao file database.txt". File text sẽ tự động sinh ra trong thư mục code của bạn.
+•	Cú chót để lấy điểm A+: Bạn hãy chạy lại (Run) chương trình lần 2. Vừa mở app lên, hệ thống sẽ báo "Da tai 2 don hang tu he thong". Bạn bấm phím 2 tra cứu lại mã VD01 sẽ thấy dữ liệu cũ hôm qua vẫn còn y nguyên, chứng minh module Đọc/Ghi file hoạt động 100%.
+
+
