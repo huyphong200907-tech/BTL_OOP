@@ -6,35 +6,38 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <queue>
 #include <stdexcept>
 #include <limits>
 
 using namespace std;
 
 // ============================================================
-// HỆ THỐNG ĐƠN HÀNG (Đã gộp kiến trúc OOP hiện đại)
+// MODULE ĐỊNH DANH & ĐÓNG GÓI (OOP)
 // ============================================================
 class DonHang {
 public:
     using Tien = int64_t;
 
     DonHang(string maDon, string tenKhach, Tien tienHang);
-    virtual ~DonHang() = default; // Cho phép unique_ptr hủy đúng class con
+    virtual ~DonHang() = default;
 
     const string& getMaVanDon() const;
+    string getTenKhach() const;
     string getTrangThai() const;
+    Tien getTienHang() const;
+    
     void capNhatTrangThai(string tt);
     
-    // Đa hình
     virtual Tien tinhTongTien() const = 0;
     virtual void xuatThongTin() const = 0;
-    
-    // Hỗ trợ hàm hệ thống cũ
     virtual string getDiaChiNhan() const = 0; 
     virtual Tien tinhPhiVanChuyen() const = 0;
+    
+    // Phục vụ File I/O
+    virtual int getLoaiDon() const = 0; 
 
 protected:
-    Tien getTienHang() const;
     void xuatThongTinChung() const;
 
 private:
@@ -44,7 +47,6 @@ private:
     string trangThai_;
 };
 
-// Đơn giao tận nhà
 class DonGiaoNha final : public DonHang {
 public:
     DonGiaoNha(string maDon, string tenKhach, Tien tienHang, string diaChi, Tien phiGiaoHang);
@@ -52,13 +54,13 @@ public:
     void xuatThongTin() const override;
     string getDiaChiNhan() const override;
     Tien tinhPhiVanChuyen() const override;
+    int getLoaiDon() const override;
 
 private:
     string diaChi_;
     Tien phiGiaoHang_;
 };
 
-// Đơn khách tự ra bưu cục nhận (Chuyển thể từ DonTaiCuaHang)
 class DonNhanTaiBuuCuc final : public DonHang {
 public:
     using DonHang::DonHang;
@@ -66,20 +68,56 @@ public:
     void xuatThongTin() const override;
     string getDiaChiNhan() const override;
     Tien tinhPhiVanChuyen() const override;
+    int getLoaiDon() const override;
 };
 
-// ... (Khai báo các class BuuCuc, Nguoi, KhachHang, Shipper giữ nguyên như cũ) ...
+// ============================================================
+// MODULE CẤU TRÚC DỮ LIỆU (QUEUE)
+// ============================================================
+class BuuCuc {
+private:
+    string maBuuCuc;
+    string khuVuc;
+    queue<DonHang*> hangDoiDonHang; // Sử dụng Queue (FIFO)
+public:
+    BuuCuc(string ma, string kv);
+    string getMaBuuCuc() const;
+    string getKhuVuc() const;
+    int soDonDangCho() const;
+    void nhanDonHangVaoHangDoi(DonHang* dh);
+    void xuLyDonHangTrongHangDoi(); // Lấy từ Queue ra để xử lý
+};
+
+// --- HỆ THỐNG NHÂN SỰ ---
+class Nguoi {
+protected:
+    string hoTen;
+    string soDienThoai;
+public:
+    Nguoi(string ht, string sdt);
+    virtual ~Nguoi() = default;
+    string getHoTen() const;
+    virtual void hienThi() const = 0;
+};
+
+class Shipper : public Nguoi {
+private:
+    string maShipper;
+    int soDonDaGiao;
+public:
+    Shipper(string ma, string ht, string sdt);
+    int getSoDonDaGiao() const;
+    void tangSoDonDaGiao();
+    void hienThi() const override;
+};
 
 // ============================================================
 // HỆ THỐNG QUẢN LÝ CHÍNH
 // ============================================================
 class QuanLyViettelPost {
 private:
-    vector<KhachHang*> danhSachKhachHang;
     vector<Shipper*> danhSachShipper;
     vector<BuuCuc*> heThongBuuCuc;
-    
-    // [UPDATE] Sử dụng unordered_map và unique_ptr để tối ưu O(1) tra cứu
     unordered_map<string, unique_ptr<DonHang>> tongDanhSachDonHang;
 
 public:
@@ -87,18 +125,22 @@ public:
     ~QuanLyViettelPost();
 
     void themBuuCuc(BuuCuc* bc);
-    void themKhachHang(KhachHang* kh);
     void themShipper(Shipper* sp);
 
-    // [UPDATE] Cập nhật tham số nhận unique_ptr
     bool taoDonHangMoi(unique_ptr<DonHang> dh);
-    DonHang* traCuuDonHang(const string& maVanDon) const;
+    void traCuuDonHang(const string& maVanDon) const;
 
+    // Luồng xử lý
     void phanBoDonHangVeBuuCuc();
-    void capNhatTrangThaiDon(string maVanDon, string trangThaiMoi);
+    void buuCucXuLyDonHang();
+    
+    // Thống kê
+    void thongKeDoanhThu() const;
+    void timShipperXuatSac() const;
 
-    int64_t tinhTongDoanhThu() const;
-    void thongKeDonHangTheoTrangThai(string trangThai) const;
+    // File I/O
+    void ghiDuLieuXuongFile(const string& tenFile) const;
+    void docDuLieuTuFile(const string& tenFile);
 };
 
 #endif
