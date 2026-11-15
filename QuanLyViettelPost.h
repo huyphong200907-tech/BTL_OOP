@@ -143,4 +143,8 @@ public:
     void docDuLieuTuFile(const string& tenFile);
 };
 
+<<<<<<< HEAD
 #endif
+=======
+#endif
+>>>>>>> 0cb9dda85d357fdae662589c31e13a67b6631665

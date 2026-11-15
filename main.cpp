@@ -104,4 +104,8 @@ int main() {
     } while (luaChon != 0);
 
     return 0;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 0cb9dda85d357fdae662589c31e13a67b6631665
